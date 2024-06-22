@@ -85,6 +85,10 @@ Runs the linter
 Runs the package tests
 ```make test```
 
+### test-coverage
+Opens the test coverage report in a HTML file
+```make test-coverage```
+
 ## Use cases
 ### Event stream to Firehose
 Let's say you want to stream events into an S3 bucket. Writing each message to S3 individually would be very expensive and you would likely hit rate limiting issues. So, you decide to use something like Firehose to write the messages to S3. However, Firehose comes with it's own limits, such as message count & data transfer. A micro-batch can be used to batch up the messages and send them off to firehose when the message count in the batch reaches a certain number, or when a timeout occurs, whichever comes first.
