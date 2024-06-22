@@ -85,6 +85,11 @@ Runs the linter
 Runs the package tests
 ```make test```
 
+
+### Test CI
+Runs the package tests without outputting test coverage
+```make test_ci```
+
 ### test-coverage
 Opens the test coverage report in a HTML file
 ```make test-coverage```
