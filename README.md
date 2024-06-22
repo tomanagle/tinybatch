@@ -1,6 +1,8 @@
 # Tinybatch
 A configurable micro-batcher with generics support.
 
+![workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+
 ## How does it work?
 Build your tinybatch client with your preferred configuration options, start the processor and start sending it jobs to process in batches.
 
@@ -77,6 +79,7 @@ for i := 0; i < count; i++ {
 	})
 
 	if err != nil {
+		// don't commit the message or panic, up to you
 		panic(err)
 	}
 }
