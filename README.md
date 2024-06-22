@@ -48,7 +48,7 @@ batcher := New(
 	ctx, // required
 	processJobs, // required
 	WithMaxBatchSize(100), //optional - default: 100 
-	WithMaxBatchDelay(time.Duration(1_000 & time.Millisecond)), // optional - default: time.Duration(1_000 & time.Millisecond)
+	WithMaxBatchDelay(1_000 * time.Millisecond), // optional - default: 1_000 * time.Millisecond
 )
 ```
 4. Start processing

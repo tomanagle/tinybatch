@@ -37,20 +37,20 @@ func TestBatcher(t *testing.T) {
 			name:          "should complete all the jobs before returning",
 			jobCount:      100_00,
 			maxBatchSize:  10,
-			maxBatchDelay: time.Duration(1_000 * time.Millisecond),
+			maxBatchDelay: 1_000 * time.Millisecond,
 			repeats:       10,
 		},
 		{
 			name:          "should complete after batch delay",
 			jobCount:      5_000, // will never reach the maxBatchSize
 			maxBatchSize:  100_000,
-			maxBatchDelay: time.Duration(1_000 * time.Millisecond),
+			maxBatchDelay: 1_000 * time.Millisecond,
 		},
 		{
 			name:               "should complete after context is cancelled",
 			jobCount:           5_000,
 			maxBatchSize:       1_000,
-			maxBatchDelay:      time.Duration(1_000 * time.Millisecond),
+			maxBatchDelay:      1_000 * time.Millisecond,
 			cancelContextAfter: 5 * time.Millisecond,
 			repeats:            100,
 		},

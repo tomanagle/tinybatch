@@ -52,8 +52,8 @@ func New[T any, R any](parentCtx context.Context, batchProcessor processor.Batch
 	// Create a Batcher instance with default settings
 	b := &Batcher[T, R]{
 		ctx:            ctx,
-		maxBatchSize:   100,                                     // Default maximum batch size
-		maxBatchDelay:  time.Duration(1_000 & time.Millisecond), // Default maximum batch delay in milliseconds
+		maxBatchSize:   100,                      // Default maximum batch size
+		maxBatchDelay:  1_000 * time.Millisecond, // Default maximum batch delay in milliseconds
 		jobs:           make(chan T),
 		cancel:         cancel,
 		batchProcessor: batchProcessor,
