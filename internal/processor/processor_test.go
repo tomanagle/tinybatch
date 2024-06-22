@@ -71,10 +71,9 @@ func TestProcessor(t *testing.T) {
 			})
 
 			go processor.Start()
-			defer processor.Stop()
 
 			for i := 0; i < tc.jobCount; i++ {
-				processor.Add(TestJob{Data: "Job " + strconv.Itoa(i+1)})
+				jobsChannel <- TestJob{Data: "Job " + strconv.Itoa(i+1)}
 			}
 
 			doneCh := make(chan bool)

@@ -66,7 +66,7 @@ func New[T any, R any](parentCtx context.Context, batchProcessor processor.Batch
 	}
 
 	// Initialize the processor with the given context and batch processing function
-	b.processor = processor.New[T, R](processor.NewProcessorParams[T, R]{
+	b.processor = processor.New(processor.NewProcessorParams[T, R]{
 		Ctx:            b.ctx,
 		MaxBatchDelay:  b.maxBatchDelay,
 		Jobs:           b.jobs,

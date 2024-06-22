@@ -5,7 +5,7 @@ A configurable micro-batcher with generics support.
 Build your tinybatch client with your preferred configuration options, start the processor and start sending it jobs to process in batches.
 
 ## How to use
-1. Define your Job and JobResult structs
+1. Define your Job and JobResult structs. These are just examples, you can use any struct you like.
 ```go
 type Job struct {
 	ID     string

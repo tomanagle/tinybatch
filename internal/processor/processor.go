@@ -11,7 +11,7 @@ type BatchProcessor[Job any, Result any] func(jobs []Job) ([]Result, error)
 type Processor[Job any, Result any] struct {
 	ctx            context.Context
 	maxBatchDelay  time.Duration
-	jobs           chan Job
+	jobs           <-chan Job
 	maxBatchSize   int
 	batchProcessor BatchProcessor[Job, Result]
 	wg             *sync.WaitGroup
@@ -20,7 +20,7 @@ type Processor[Job any, Result any] struct {
 type NewProcessorParams[Job any, Result any] struct {
 	Ctx            context.Context
 	MaxBatchDelay  time.Duration
-	Jobs           chan Job
+	Jobs           <-chan Job
 	MaxBatchSize   int
 	BatchProcessor BatchProcessor[Job, Result]
 	Wg             *sync.WaitGroup
@@ -77,13 +77,4 @@ func (p *Processor[Job, Result]) processBatch(batch []Job) {
 	for i := 0; i < len(batch); i++ {
 		p.wg.Done()
 	}
-}
-
-func (p *Processor[Job, Result]) Add(job Job) {
-	p.jobs <- job
-}
-
-func (p *Processor[Job, Result]) Stop() {
-	close(p.jobs)
-	p.wg.Wait()
 }
