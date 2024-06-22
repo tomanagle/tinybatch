@@ -45,11 +45,15 @@ func TestBatcher(t *testing.T) {
 			maxBatchDelay: 1_000 * time.Millisecond,
 		},
 		{
-			name:               "should complete after context is cancelled",
+			name:               "should handle errors gracefully if context is cancelled",
 			jobCount:           5_000,
 			maxBatchSize:       1_000,
 			maxBatchDelay:      1_000 * time.Millisecond,
 			cancelContextAfter: 3 * time.Millisecond,
+		},
+		{
+			name:     "should set default options",
+			jobCount: 10_000,
 		},
 	}
 
@@ -84,12 +88,18 @@ func TestBatcher(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			batcher := New(
-				ctx,
-				processJobs,
-				WithMaxBatchSize(tc.maxBatchSize),
-				WithMaxBatchDelay(tc.maxBatchDelay),
-			)
+			var batcher *Batcher[Job, JobResult]
+
+			if tc.maxBatchSize > 0 && tc.maxBatchDelay > 0 {
+				batcher = New(
+					ctx,
+					processJobs,
+					WithMaxBatchSize(tc.maxBatchSize),
+					WithMaxBatchDelay(tc.maxBatchDelay),
+				)
+			} else {
+				batcher = New(ctx, processJobs)
+			}
 
 			if tc.cancelContextAfter > 0 {
 				time.AfterFunc(tc.cancelContextAfter, func() {
