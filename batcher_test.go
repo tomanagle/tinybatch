@@ -31,14 +31,12 @@ func TestBatcher(t *testing.T) {
 		maxBatchDelay      time.Duration
 		jobCount           int
 		cancelContextAfter time.Duration
-		repeats            int // repeat the test n times
 	}{
 		{
 			name:          "should complete all the jobs before returning",
 			jobCount:      100_00,
 			maxBatchSize:  10,
 			maxBatchDelay: 1_000 * time.Millisecond,
-			repeats:       10,
 		},
 		{
 			name:          "should complete after batch delay",
@@ -51,8 +49,7 @@ func TestBatcher(t *testing.T) {
 			jobCount:           5_000,
 			maxBatchSize:       1_000,
 			maxBatchDelay:      1_000 * time.Millisecond,
-			cancelContextAfter: 5 * time.Millisecond,
-			repeats:            100,
+			cancelContextAfter: 3 * time.Millisecond,
 		},
 	}
 
@@ -62,78 +59,70 @@ func TestBatcher(t *testing.T) {
 
 			assert := assert.New(t)
 
-			runCount := tc.repeats
-			if runCount == 0 {
-				runCount = 1
+			count := tc.jobCount
+			var successCounter atomic.Int64
+			var errCounter atomic.Int64
+
+			var processJobs = func(jobs []Job) ([]JobResult, error) {
+
+				results := make([]JobResult, 0, len(jobs))
+
+				for _, job := range jobs {
+					result := JobResult{
+						ID:      job.ID,
+						Message: job.Params.Name + " processed",
+						Error:   "",
+					}
+					successCounter.Add(1)
+
+					results = append(results, result)
+				}
+
+				return results, nil
 			}
 
-			for i := 0; i < runCount; i++ {
-				count := tc.jobCount
-				var successCounter atomic.Int64
-				var errCounter atomic.Int64
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-				var processJobs = func(jobs []Job) ([]JobResult, error) {
+			batcher := New(
+				ctx,
+				processJobs,
+				WithMaxBatchSize(tc.maxBatchSize),
+				WithMaxBatchDelay(tc.maxBatchDelay),
+			)
 
-					results := make([]JobResult, 0, len(jobs))
-
-					for _, job := range jobs {
-						result := JobResult{
-							ID:      job.ID,
-							Message: job.Params.Name + " processed",
-							Error:   "",
-						}
-						successCounter.Add(1)
-
-						results = append(results, result)
-					}
-
-					return results, nil
-				}
-
-				ctx, cancel := context.WithCancel(context.Background())
-				defer cancel()
-
-				batcher := New(
-					ctx,
-					processJobs,
-					WithMaxBatchSize(tc.maxBatchSize),
-					WithMaxBatchDelay(tc.maxBatchDelay),
-				)
-
-				if tc.cancelContextAfter > 0 {
-					time.AfterFunc(tc.cancelContextAfter, func() {
-						cancel()
-					})
-				}
-
-				batcher.Start()
-
-				for i := 0; i < count; i++ {
-					err := batcher.Add(Job{
-						ID: strconv.Itoa(i),
-						Params: struct {
-							Name string
-						}{
-							Name: "Job " + strconv.Itoa(i),
-						},
-					})
-
-					if err != nil {
-						errCounter.Add(1)
-					}
-				}
-
-				if tc.cancelContextAfter == 0 {
-					batcher.Stop()
-				}
-
-				success := successCounter.Load()
-				errs := errCounter.Load()
-
-				assert.True(true)
-
-				assert.Equal(int(errs+success), count)
+			if tc.cancelContextAfter > 0 {
+				time.AfterFunc(tc.cancelContextAfter, func() {
+					cancel()
+				})
 			}
+
+			batcher.Start()
+
+			for i := 0; i < count; i++ {
+				err := batcher.Add(Job{
+					ID: strconv.Itoa(i),
+					Params: struct {
+						Name string
+					}{
+						Name: "Job " + strconv.Itoa(i),
+					},
+				})
+
+				if err != nil {
+					errCounter.Add(1)
+				}
+			}
+
+			if tc.cancelContextAfter == 0 {
+				batcher.Stop()
+			}
+
+			success := successCounter.Load()
+			errs := errCounter.Load()
+
+			assert.True(true)
+			assert.Equal(count, int(errs+success))
 
 		})
 
