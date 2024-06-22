@@ -68,10 +68,11 @@ The add function will return an error if you try add something after context has
 for i := 0; i < count; i++ {
 	err := batcher.Add(Job{
 		ID: strconv.Itoa(i),
-		Params: struct {
-			Name string
-		}{
-			Name: "Job " + strconv.Itoa(i),
+		Message: Message{
+			Topic:  "test",
+			Offset: int64(i),
+			Key:    []byte("key"),
+			Value:  []byte("value"),
 		},
 	})
 
