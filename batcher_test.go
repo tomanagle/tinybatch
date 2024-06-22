@@ -10,17 +10,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type Message struct {
+	Topic  string
+	Offset int64
+	Key    []byte
+	Value  []byte
+}
+
 type Job struct {
-	ID     string
-	Params struct {
-		Name string
-	}
+	ID      string
+	Message Message
 }
 
 type JobResult struct {
-	ID      string
-	Message string
-	Error   string
+	ID   string
+	Data []byte
 }
 
 func TestBatcher(t *testing.T) {
@@ -73,9 +77,8 @@ func TestBatcher(t *testing.T) {
 
 				for _, job := range jobs {
 					result := JobResult{
-						ID:      job.ID,
-						Message: job.Params.Name + " processed",
-						Error:   "",
+						ID:   job.ID,
+						Data: job.Message.Value,
 					}
 					successCounter.Add(1)
 
@@ -112,10 +115,11 @@ func TestBatcher(t *testing.T) {
 			for i := 0; i < count; i++ {
 				err := batcher.Add(Job{
 					ID: strconv.Itoa(i),
-					Params: struct {
-						Name string
-					}{
-						Name: "Job " + strconv.Itoa(i),
+					Message: Message{
+						Topic:  "test",
+						Offset: int64(i),
+						Key:    []byte("key"),
+						Value:  []byte("value"),
 					},
 				})
 

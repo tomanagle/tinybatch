@@ -7,31 +7,37 @@ Build your tinybatch client with your preferred configuration options, start the
 ## How to use
 1. Define your Job and JobResult structs. These are just examples, you can use any struct you like.
 ```go
+type Message struct {
+	Topic  string
+	Offset int64
+	Key    []byte
+	Value  []byte
+}
+
 type Job struct {
-	ID     string
-	Params struct {
-		Name string
-	}
+	ID      string
+	Message Message
 }
 
 type JobResult struct {
-	ID     string
-	Message string
-	Error  string
+	ID   string
+	Data []byte
 }
 ```
 2. Create the processBatch function
-The function should take a slice of your job struct and return a slice of JobResult, along with an error
+The function should take a slice of your job struct and return a slice of JobResult, along with an error. 
 ```go
 func processJobs(jobs []Job) ([]JobResult, error) {
 
+	/*
+	* Your function implementation
+	*/
 	results := make([]JobResult, 0, len(jobs))
 
 	for _, job := range jobs {
 		result := JobResult{
-			ID:     job.ID,
-			Message: job.Params.Name + " processed",
-			Error:  "",
+			ID:   job.ID,
+			Data: job.Message.Value,
 		}
 		successCounter.Add(1)
 
