@@ -15,9 +15,9 @@ type Batcher[T any, R any] struct {
 	ctx context.Context
 	// The maximum number of items that can be batched together
 
-	maxBatchSize int
+	MaxBatchSize int
 	// The maximum delay in milliseconds before the batch is processed
-	maxBatchDelay time.Duration
+	MaxBatchDelay time.Duration
 
 	// The channel to send jobs to the processor
 	jobs chan T
@@ -52,25 +52,34 @@ func New[T any, R any](parentCtx context.Context, batchProcessor processor.Batch
 	// Create a Batcher instance with default settings
 	b := &Batcher[T, R]{
 		ctx:            ctx,
-		maxBatchSize:   100,                      // Default maximum batch size
-		maxBatchDelay:  1_000 * time.Millisecond, // Default maximum batch delay in milliseconds
+		MaxBatchSize:   100,                      // Default maximum batch size
+		MaxBatchDelay:  1_000 * time.Millisecond, // Default maximum batch delay in milliseconds
 		jobs:           make(chan T),
 		cancel:         cancel,
 		batchProcessor: batchProcessor,
 	}
 
-	// Apply provided options to configure the Batcher
+	// Build the config from the options
 	var cfg batcherConfig
 	for _, option := range opts {
 		option.applyOption(&cfg)
 	}
 
+	// Apply the configuration
+	if cfg.maxBatchSize != 0 {
+		b.MaxBatchSize = cfg.maxBatchSize
+	}
+
+	if cfg.maxBatchDelay != 0 {
+		b.MaxBatchDelay = cfg.maxBatchDelay
+	}
+
 	// Initialize the processor with the given context and batch processing function
 	b.processor = processor.New(processor.NewProcessorParams[T, R]{
 		Ctx:            b.ctx,
-		MaxBatchDelay:  b.maxBatchDelay,
+		MaxBatchDelay:  b.MaxBatchDelay,
 		Jobs:           b.jobs,
-		MaxBatchSize:   b.maxBatchSize,
+		MaxBatchSize:   b.MaxBatchSize,
 		BatchProcessor: b.batchProcessor,
 		Wg:             &b.pendingJobs,
 	})

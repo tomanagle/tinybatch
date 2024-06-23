@@ -40,7 +40,7 @@ func TestBatcher(t *testing.T) {
 			name:          "should complete all the jobs before returning",
 			jobCount:      100_00,
 			maxBatchSize:  10,
-			maxBatchDelay: 1_000 * time.Millisecond,
+			maxBatchDelay: 1_500 * time.Millisecond,
 		},
 		{
 			name:          "should complete after batch delay",
@@ -102,6 +102,18 @@ func TestBatcher(t *testing.T) {
 				)
 			} else {
 				batcher = New(ctx, processJobs)
+			}
+
+			if tc.maxBatchSize != 0 {
+				assert.Equal(tc.maxBatchSize, batcher.MaxBatchSize)
+			} else { // default value
+				assert.Equal(100, batcher.MaxBatchSize)
+			}
+
+			if tc.maxBatchDelay != 0 {
+				assert.Equal(tc.maxBatchDelay, batcher.MaxBatchDelay)
+			} else { // default value
+				assert.Equal(1_000*time.Millisecond, batcher.MaxBatchDelay)
 			}
 
 			if tc.cancelContextAfter > 0 {
